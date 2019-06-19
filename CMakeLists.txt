@@ -32,9 +32,21 @@ if(UNIX AND NOT APPLE)
 		LIST(APPEND Neko_LIBRARIES
 				stdc++fs)
 	endif()
+endif(UNIX AND NOT APPLE)
 
-
-ENDIF()
+if(APPLE)
+	find_package(Boost 1.66.0 REQUIRED COMPONENTS
+	    program_options
+	    filesystem
+	    system
+	    date_time
+	    chrono
+	)
+	if(NOT Boost_FOUND)
+		message(FATAL_ERROR "Boost not found")
+	endif(NOT Boost_FOUND)
+	include_directories(${Boost_INCLUDE_DIRS})
+endif(APPLE)
 
 set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/externals)
 
@@ -51,7 +63,7 @@ file(GLOB_RECURSE Neko_EXTENSIONS_SRC extensions/src/*.cpp extensions/include/*.
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 SET_SOURCE_FILES_PROPERTIES( ${Neko_SRC} PROPERTIES
                 FOLDER "${CMAKE_SOURCE_DIR}/src" )
-				
+
 source_group("Graphics"            FILES ${Neko_GRAPHICS_SRC})
 source_group("Engine"            FILES ${Neko_ENGINE_SRC})
 source_group("Utility"            FILES ${Neko_UTILITY_SRC})
@@ -80,7 +92,7 @@ include_directories(${SFML_DIR}/include ${SFML_DIR}/src)
 
 LIST(APPEND Neko_LIBRARIES
 		sfml-audio sfml-graphics sfml-window sfml-system sfml-network)
-		
+
 #Google Test
 enable_testing()
 set(GOOGLE_TEST_DIR ${EXTERNAL_DIR}/googletest-1.8.1)
@@ -101,7 +113,7 @@ add_subdirectory(${SFML_IMGUI})
 include_directories(${IMGUI_ROOT} ${SFML_IMGUI})
 LIST(APPEND Neko_LIBRARIES
 	ImGui-SFML)
-	
+
 #BOX2D
 set(BOX2D_DIR ${EXTERNAL_DIR}/Box2D-2.3.1)
 set(BOX2D_BUILD_EXAMPLES OFF CACHE INTERNAL "")
@@ -138,7 +150,7 @@ file(GLOB_RECURSE DATA_FILES
 		"${PROJECT_SOURCE_DIR}/data/*.pic"
 		"${PROJECT_SOURCE_DIR}/data/*.json"
 		)
-		
+
 foreach(DATA ${DATA_FILES})
 	get_filename_component(FILE_NAME ${DATA} NAME)
 	get_filename_component(PATH_NAME ${DATA} DIRECTORY)
@@ -181,7 +193,7 @@ foreach(course_file ${COURSE_FILES} )
     # I used a simple string replace, to cut off .cpp.
     file(RELATIVE_PATH course_relative_path ${Neko_COURSE_DIR} ${course_file} )
     string( REPLACE ".cpp" "" course_name ${course_relative_path} )
-	
+
     add_executable(${course_name} ${Neko_COURSE_DIR}/${course_relative_path} ${SHADERS_SRC})
     # Make sure YourLib is linked to each app
     target_link_libraries(${course_name} PUBLIC Neko_COMMON)
@@ -196,5 +208,3 @@ else()
 file(COPY ${SFML_DIR}/extlibs/bin/x64/openal32.dll DESTINATION ${CMAKE_BINARY_DIR}/)
 endif()
 endif()
-
-
